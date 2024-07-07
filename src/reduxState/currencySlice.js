@@ -1,9 +1,17 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { fetchBaseCurrency } from './operations';
+import {
+  fetchBaseCurrency,
+  fetchExchangeCurrency,
+  fetchRates,
+} from './operations';
 
 const initialState = {
   baseCurrency: '',
+  exchangeInfo: null,
+  isLoading: false,
+  isError: null,
+  rates: [],
 };
 const currencySlice = createSlice({
   name: 'currency',
@@ -14,9 +22,36 @@ const currencySlice = createSlice({
     },
   },
   extraReducers: builder => {
-    builder.addCase(fetchBaseCurrency.fulfilled, (state, action) => {
-      state.baseCurrency = action.payload;
-    });
+    builder
+      .addCase(fetchBaseCurrency.fulfilled, (state, action) => {
+        state.baseCurrency = action.payload;
+      })
+      .addCase(fetchExchangeCurrency.pending, state => {
+        state.isError = null;
+        state.isLoading = true;
+      })
+      .addCase(fetchExchangeCurrency.fulfilled, (state, action) => {
+        state.exchangeInfo = action.payload;
+        state.isLoading = false;
+      })
+      .addCase(fetchExchangeCurrency.rejected, (state, action) => {
+        state.isError = action.payload;
+        state.isLoading = false;
+        state.exchangeInfo = null;
+      })
+      .addCase(fetchRates.pending, state => {
+        state.isError = null;
+        state.isLoading = true;
+      })
+      .addCase(fetchRates.fulfilled, (state, { payload }) => {
+        state.rates = payload;
+        state.isLoading = false;
+      })
+      .addCase(fetchRates.rejected, (state, action) => {
+        state.isError = action.payload;
+        state.isLoading = false;
+        state.rates = [];
+      });
   },
 });
 
